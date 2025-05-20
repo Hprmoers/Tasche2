@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="de" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Schultaschen-Check</title>
+  <!-- Bootstrap CSS (Replit dark theme) -->
+  <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    body {
+      background-color: #f5f5f5 !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="container py-4">
+    <div class="app card shadow">
+      <div class="card-header bg-primary text-white d-flex align-items-center justify-content-between">
+        <h1 class="mb-0"><i class="fas fa-backpack me-2"></i>Schultaschen-Check</h1>
+        <img src="{{ url_for('static', filename='images/school-logo.png') }}" alt="Schul-Logo" class="app-logo" style="height: 60px; width: auto;">
+      </div>
+      
+      <!-- Wochentags-Navigation -->
+      <div class="card-header bg-dark py-2">
+        <ul class="nav nav-pills nav-fill">
+          <li class="nav-item">
+            <a class="nav-link" id="tab-montag" href="#" onclick="wechsleWochentag('montag')">
+              <span>☀️ Montag</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="tab-dienstag" href="#" onclick="wechsleWochentag('dienstag')">
+              <span>🌱 Dienstag</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="tab-mittwoch" href="#" onclick="wechsleWochentag('mittwoch')">
+              <span>☕ Mittwoch</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="tab-donnerstag" href="#" onclick="wechsleWochentag('donnerstag')">
+              <span>⚡ Donnerstag</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="tab-freitag" href="#" onclick="wechsleWochentag('freitag')">
+              <span>⭐ Freitag</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+      
+      <div class="card-body">
+        <div class="alert alert-info" role="alert">
+          <i class="fas fa-info-circle me-2"></i>Überprüfe, ob du alles für <span id="tag-titel">Montag</span> eingepackt hast!
+        </div>
+        
+        <!-- Eigene Elemente hinzufügen -->
+        <div class="mb-3">
+          <div class="input-group">
+            <select class="form-select" id="kategorie-select">
+              <option value="grundausstattung">📚 Grundausstattung</option>
+              <option value="bücher">📖 Bücher & Hefte</option>
+              <option value="sport">🏃‍♂️ Sportsachen</option>
+              <option value="kunst">🎨 Kunstsachen</option>
+              <option value="musik">🎵 Musiksachen</option>
+              <option value="labor">🔬 Laborsachen</option>
+              <option value="sonstiges">✏️ Sonstiges</option>
+            </select>
+            <input type="text" class="form-control" id="neues-element" placeholder="Eigenen Gegenstand hinzufügen...">
+            <button class="btn btn-primary" type="button" onclick="elementHinzufügen()">
+              <i class="fas fa-plus me-1"></i> Hinzufügen
+            </button>
+          </div>
+        </div>
+        
+        <div class="list-group mb-4" id="liste">
+          <!-- Items will be loaded via JavaScript -->
+        </div>
+        
+        <div class="d-flex justify-content-between mb-3">
+          <div class="progress w-75">
+            <div class="progress-bar bg-success" role="progressbar" id="fortschritt" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">0%</div>
+          </div>
+          <button class="btn btn-secondary" onclick="zurücksetzen()">
+            <i class="fas fa-redo-alt me-1"></i> Zurücksetzen
+          </button>
+        </div>
+        
+        <!-- Teilen-Funktion (ausklappbar) -->
+        <div class="card mb-3">
+          <div class="card-header bg-info text-white d-flex justify-content-between align-items-center teilen-header" 
+               onclick="toggleTeilenFunktion()">
+            <div>
+              <i class="fas fa-share-alt me-2"></i> Teilen-Funktion für Eltern/Lehrer
+            </div>
+            <div>
+              <i class="fas fa-chevron-down toggle-icon" id="teilen-toggle-icon"></i>
+            </div>
+          </div>
+          <div class="card-body" id="teilen-body" style="display: none;">
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <button class="btn btn-primary w-100" onclick="listeTeilenErstellen()">
+                  <i class="fas fa-share-square me-1"></i> Liste zum Teilen generieren
+                </button>
+              </div>
+              <div class="col-md-6">
+                <div class="input-group">
+                  <input type="text" class="form-control" id="teilen-code" placeholder="Teilen-Code eingeben...">
+                  <button class="btn btn-success" onclick="listeLaden()">
+                    <i class="fas fa-download me-1"></i> Laden
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="mt-3" id="teilen-info" style="display: none;">
+              <div class="alert alert-success">
+                <p><strong>Teilen-Code:</strong></p>
+                <div class="input-group mb-3">
+                  <input type="text" class="form-control" id="teilen-code-anzeige" readonly>
+                  <button class="btn btn-outline-secondary" type="button" onclick="kopiereCode()">
+                    <i class="fas fa-copy"></i> Kopieren
+                  </button>
+                </div>
+                <p><small>Teilen Sie diesen Code mit anderen, damit diese Ihre Liste verwenden können.</small></p>
+                <div class="mb-2">
+                  <button class="btn btn-sm btn-outline-primary" onclick="erstelleShareLink()">
+                    <i class="fas fa-link me-1"></i> Share-Link erstellen
+                  </button>
+                </div>
+                <div id="share-link-container" style="display: none;">
+                  <p><strong>Share-Link:</strong></p>
+                  <div class="input-group mb-2">
+                    <input type="text" class="form-control" id="share-link" readonly>
+                    <button class="btn btn-outline-secondary" type="button" onclick="kopiereShareLink()">
+                      <i class="fas fa-copy"></i> Kopieren
+                    </button>
+                  </div>
+                  <p class="mb-0"><small>Dieser Link kann direkt geteilt werden und öffnet die Anwendung mit Ihrer Liste.</small></p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card-footer">
+        <div class="d-flex justify-content-between align-items-center">
+          <span class="text-muted"><small>Deine Elemente werden lokal gespeichert</small></span>
+          <span class="badge bg-success" id="fertig-badge">0 von 0 erledigt</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html>
